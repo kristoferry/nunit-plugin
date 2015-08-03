@@ -3,6 +3,7 @@ package hudson.plugins.nunit;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 
@@ -16,6 +17,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.jenkinsci.remoting.RoleChecker;
 import org.xml.sax.SAXException;
 
 /**
@@ -44,6 +46,13 @@ public class NUnitArchiver implements FilePath.FileCallable<Boolean>, Serializab
     
     public NUnitArchiver(BuildListener listener, String testResults, TestReportTransformer unitReportTransformer, Boolean failIfNoResults) throws TransformerException {
         this.listener = listener;
+        this.testResultsPattern = testResults;
+        this.unitReportTransformer = unitReportTransformer;
+        this.failIfNoResults = failIfNoResults;
+    }
+    
+    public NUnitArchiver(TaskListener listener, String testResults, TestReportTransformer unitReportTransformer, Boolean failIfNoResults) throws TransformerException {
+        this.listener = (BuildListener)listener;
         this.testResultsPattern = testResults;
         this.unitReportTransformer = unitReportTransformer;
         this.failIfNoResults = failIfNoResults;
@@ -101,5 +110,10 @@ public class NUnitArchiver implements FilePath.FileCallable<Boolean>, Serializab
         	}
         }
         return nunitFiles;
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

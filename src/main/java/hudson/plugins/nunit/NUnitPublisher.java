@@ -22,14 +22,11 @@ import hudson.tasks.Recorder;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-
 import javax.xml.transform.TransformerException;
 import jenkins.tasks.SimpleBuildStep;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
@@ -136,6 +133,7 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
         }
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -152,8 +150,10 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
             String resolvedTestResultsPattern = env.expand(testResultsPattern);
 
             listener.getLogger().println("Recording NUnit tests results");
-            NUnitArchiver transformer = new NUnitArchiver(listener, resolvedTestResultsPattern, new NUnitReportTransformer(), failIfNoResults);
-            result = build.getWorkspace().act(transformer);
+
+            result = (build.getWorkspace() != null)
+                    ? build.getWorkspace().act(new NUnitArchiver(listener, resolvedTestResultsPattern, new NUnitReportTransformer(), failIfNoResults))
+                    : false;
 
             if (result) {
                 if (skipJUnitArchiver) {
@@ -179,14 +179,17 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
 
     @Override
     public void perform(Run<?, ?> run, FilePath filePath, Launcher launcher, TaskListener taskListener) throws InterruptedException, IOException {
+
         try {
+
             EnvVars env = run.getEnvironment(taskListener);
             String resolvedTestResultsPattern = env.expand(testResultsPattern);
 
             taskListener.getLogger().println("Recording NUnit tests results");
-            NUnitArchiver transformer = new NUnitArchiver(taskListener, resolvedTestResultsPattern, new NUnitReportTransformer(), failIfNoResults);
 
+            NUnitArchiver transformer = new NUnitArchiver(taskListener, resolvedTestResultsPattern, new NUnitReportTransformer(), failIfNoResults);
             if (filePath.act(transformer)) {
+
                 if (skipJUnitArchiver) {
                     taskListener.getLogger().println("Skipping feeding JUnit reports to JUnitArchiver");
                 } else {
@@ -199,6 +202,8 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
                 } else {
                     filePath.child(NUnitArchiver.JUNIT_REPORTS_PATH).deleteRecursive();
                 }
+            } else {
+                run.setResult(Result.FAILURE);
             }
 
         } catch (TransformerException te) {
@@ -218,6 +223,7 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
      */
     private boolean recordTestResult(String junitFilePattern, AbstractBuild<?, ?> build, BuildListener listener)
             throws InterruptedException, IOException {
+        
         TestResultAction existingAction = build.getAction(TestResultAction.class);
         TestResultAction action;
 
@@ -252,9 +258,10 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
 
         return true;
     }
-    
+
     private boolean recordTestResult(String junitFilePattern, Run<?, ?> run, TaskListener listener, FilePath filePath)
             throws InterruptedException, IOException {
+
         TestResultAction existingAction = run.getAction(TestResultAction.class);
         TestResultAction action;
 
@@ -301,12 +308,16 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
      * @throws IOException
      * @throws InterruptedException
      */
-    private TestResult getTestResult(final String junitFilePattern, AbstractBuild<?, ?> build,
-            final TestResult existingTestResults, final long buildTime) throws IOException, InterruptedException {
+    private TestResult getTestResult(final String junitFilePattern, AbstractBuild<?, ?> build, final TestResult existingTestResults, final long buildTime)
+            throws IOException, InterruptedException {
+
         TestResult result = build.getWorkspace().act(new FileCallable<TestResult>() {
+
             private static final long serialVersionUID = -8917897415838795523L;
 
+            @Override
             public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
+            
                 FileSet fs = Util.createFileSet(ws, junitFilePattern);
                 DirectoryScanner ds = fs.getDirectoryScanner();
 
@@ -319,6 +330,7 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
                         return new TestResult();
                     }
                 }
+                
                 if (existingTestResults == null) {
                     return new TestResult(buildTime, ds, true);
                 } else {
@@ -334,13 +346,17 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
         });
         return result;
     }
-    
-    private TestResult getTestResult(final String junitFilePattern, FilePath filePath,
-            final TestResult existingTestResults, final long buildTime) throws IOException, InterruptedException {
+
+    private TestResult getTestResult(final String junitFilePattern, FilePath filePath, final TestResult existingTestResults, final long buildTime)
+            throws IOException, InterruptedException {
+
         TestResult result = filePath.act(new FileCallable<TestResult>() {
+
             private static final long serialVersionUID = -8917897415838795523L;
 
+            @Override
             public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
+
                 FileSet fs = Util.createFileSet(ws, junitFilePattern);
                 DirectoryScanner ds = fs.getDirectoryScanner();
 

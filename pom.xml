@@ -4,12 +4,12 @@
 	<parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.609.1</version>
+        <version>1.642.2</version>
 	</parent>
 
 	<artifactId>nunit</artifactId>
 	<packaging>hpi</packaging>
-	<version>0.18-SNAPSHOT</version>
+	<version>0.20-SNAPSHOT</version>
 	<name>Jenkins NUnit plugin</name>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/NUnit+Plugin</url>
 
@@ -76,17 +76,17 @@
 	 <dependency>
 	  <groupId>${project.groupId}</groupId>
 	  <artifactId>junit</artifactId>
-	  <version>1.8</version>
+	  <version>1.11</version>
 	 </dependency>
 	 <dependency>
 	  <groupId>org.jenkins-ci.plugins.workflow</groupId>
 	  <artifactId>workflow-aggregator</artifactId>
-	  <version>1.9</version>
+	  <version>1.15</version>
 	 </dependency>
 	 <dependency>
 	  <groupId>org.jenkins-ci.main</groupId>
 	  <artifactId>jenkins-core</artifactId>
-	  <version>1.609.1</version>
+	  <version>1.642.2</version>
 	 </dependency>
 	</dependencies>
 

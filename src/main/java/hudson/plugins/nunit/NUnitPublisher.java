@@ -181,7 +181,7 @@ public class NUnitPublisher extends Recorder implements Serializable, SimpleBuil
     public void perform(Run<?, ?> run, FilePath filePath, Launcher launcher, TaskListener taskListener) throws InterruptedException, IOException {
 
         try {
-
+            
             EnvVars env = run.getEnvironment(taskListener);
             String resolvedTestResultsPattern = env.expand(testResultsPattern);
 
